@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ramadan Countdown</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Flowing crescent moon -->
+<div id="moon-stars"></div>
+
+<!-- Flowing stars -->
+<div id="stars"></div>
+
+<!-- Countdown Page -->
+<div class="container" id="countdown-page">
+  <h1>🌙 Ramadan Countdown</h1>
+
+  <select id="city-select">
+    <option value="Lahore">Lahore</option>
+    <option value="Karachi">Karachi</option>
+    <option value="Islamabad">Islamabad</option>
+    <option value="Multan">Multan</option>
+  </select>
+
+  <h3 id="hijri-date"></h3>
+
+  <h2 id="event-name">Loading...</h2>
+  <div id="countdown">00:00:00</div>
+
+  <button id="show-calendar">Show Ramadan Calendar</button>
+</div>
+
+<!-- Calendar Page -->
+<div class="container" id="calendar-page" style="display:none;">
+  <h1>🌙 Ramadan Calendar</h1>
+
+  <div class="calendar-wrapper">
+    <table id="ramadan-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Sehri</th>
+          <th>Iftar</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <button id="back-to-countdown">← Back to Countdown</button>
+</div>
+
+<audio id="azanAudio" src="azan.mp3"></audio>
+<script src="script.js"></script>
+</body>
+</html>
