@@ -99,6 +99,31 @@ h1 {
   color: #FFD700;
 }
 
+/* additional counters layout */
+#additional-countdowns {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.single-countdown {
+  flex: 1 1 45%;
+  text-align: center;
+  margin: 5px 0;
+}
+.single-countdown h3 {
+  font-size: 20px;
+  color: #FFD700;
+  margin: 5px 0;
+}
+.inner-countdown {
+  font-size: 36px;
+  font-weight: bold;
+  color: #FFD700;
+}
+
+
 
 
 #hijri-date {
@@ -189,6 +214,18 @@ button {
   #countdown { font-size: 30px; }
   #hijri-date { font-size: 16px; }
   select, button { font-size: 14px; padding: 6px 10px; }
+}
+
+/* external link styling */
+#external-calendar-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: #FFD700;
+  font-weight: bold;
+  text-decoration: none;
+}
+#external-calendar-link:hover {
+  text-decoration: underline;
 }
 /* Highlight today's row */
 .today-row {
