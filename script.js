@@ -59,22 +59,47 @@ function updateCountdown() {
     fetchPrayerTimes(citySelect.value);
   }
 
-  let targetTime, eventText;
+  // determine next events for display
+  const tomorrowFajr = new Date(fajrTime);
+  tomorrowFajr.setDate(tomorrowFajr.getDate() + 1);
+  const tomorrowMaghrib = new Date(maghribTime);
+  tomorrowMaghrib.setDate(tomorrowMaghrib.getDate() + 1);
 
-  if (now < maghribTime) {
-    targetTime = maghribTime;
+  // next Iftar time
+  let nextIftar = now < maghribTime ? maghribTime : tomorrowMaghrib;
+  // next Sehri time
+  let nextSehri = now < fajrTime ? fajrTime : tomorrowFajr;
+
+  // compute differences
+  const diffIftar = nextIftar - now;
+  const diffSehri = nextSehri - now;
+
+  const formatTime = t => t.toString().padStart(2, "0");
+  const formatDiff = diff => {
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+    return `${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}`;
+  };
+
+  document.getElementById("iftar-countdown").innerText = formatDiff(diffIftar);
+  document.getElementById("sehri-countdown").innerText = formatDiff(diffSehri);
+
+  // primary display remains the next upcoming event
+  let eventText, nextDiff;
+  if (diffIftar <= diffSehri) {
     eventText = "Time left for Iftar";
+    nextDiff = diffIftar;
   } else {
-    const tomorrowFajr = new Date(fajrTime);
-    tomorrowFajr.setDate(tomorrowFajr.getDate() + 1);
-    targetTime = tomorrowFajr;
     eventText = "Time left for Sehri";
+    nextDiff = diffSehri;
   }
 
-  const diff = targetTime - now;
+  document.getElementById("event-name").innerText = eventText;
+  document.getElementById("countdown").innerText = formatDiff(nextDiff);
 
-  // Play Azan when countdown reaches zero
-  if (diff <= 0 && !played) {
+  // Play Azan when the primary event reaches zero
+  if (nextDiff <= 0 && !played) {
     if (azan) {
       azan.currentTime = 0;
       azan.volume = 0.8;
@@ -82,15 +107,6 @@ function updateCountdown() {
     }
     played = true;
   }
-
-  const hours = Math.floor(diff / (1000*60*60));
-  const minutes = Math.floor((diff / (1000*60)) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
-  const formatTime = t => t.toString().padStart(2,"0");
-
-  document.getElementById("event-name").innerText = eventText;
-  document.getElementById("countdown").innerText =
-    `${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}`;
 }
 
 // =======================
@@ -146,6 +162,7 @@ document.getElementById("show-calendar").addEventListener("click", () => {
   countdownPage.style.display = "none";
   calendarPage.style.display = "flex";
 });
+
 
 document.getElementById("back-to-countdown").addEventListener("click", () => {
   calendarPage.style.display = "none";
