@@ -27,8 +27,21 @@
 
   <h3 id="hijri-date"></h3>
 
+  <!-- Primary countdown (next upcoming event) -->
   <h2 id="event-name">Loading...</h2>
   <div id="countdown">00:00:00</div>
+
+  <!-- Additional Sehri/Iftar counters -->
+  <div id="additional-countdowns">
+    <div class="single-countdown">
+      <h3>Time left for Iftar</h3>
+      <div class="inner-countdown" id="iftar-countdown">00:00:00</div>
+    </div>
+    <div class="single-countdown">
+      <h3>Time left for Sehri</h3>
+      <div class="inner-countdown" id="sehri-countdown">00:00:00</div>
+    </div>
+  </div>
 
   <button id="show-calendar">Show Ramadan Calendar</button>
 </div>
@@ -51,6 +64,7 @@
   </div>
 
   <button id="back-to-countdown">← Back to Countdown</button>
+  <a href="https://www.islamicfinder.org/ramadan-calendar/" target="_blank" rel="noopener" id="external-calendar-link">IslamicFinder Ramadan Calendar</a>
 </div>
 
 <audio id="azanAudio" src="azan.mp3"></audio>
