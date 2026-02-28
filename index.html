@@ -8,15 +8,11 @@
 </head>
 <body>
 
-<!-- Flowing crescent moon -->
-<div id="moon-stars"></div>
+<div class="overlay"></div>
 
-<!-- Flowing stars -->
-<div id="stars"></div>
-
-<!-- Countdown Page -->
 <div class="container" id="countdown-page">
   <h1>🌙 Ramadan Countdown</h1>
+  <div id="hijri-date">Loading Hijri Date...</div>
 
   <select id="city-select">
     <option value="Lahore">Lahore</option>
@@ -25,31 +21,25 @@
     <option value="Multan">Multan</option>
   </select>
 
-  <h3 id="hijri-date"></h3>
-
-  <!-- Primary countdown (next upcoming event) -->
   <h2 id="event-name">Loading...</h2>
   <div id="countdown">00:00:00</div>
 
-  <!-- Additional Sehri/Iftar counters -->
   <div id="additional-countdowns">
     <div class="single-countdown">
-      <h3>Iftar Time</h3>
-      <div class="inner-countdown" id="iftar-countdown">00:00:00</div>
+      <h3 class="single-countdown-text">Sehri Time</h3>
+      <div class="inner-countdown" id="sehri-countdown">00:00 AM</div>
     </div>
     <div class="single-countdown">
-      <h3>Sehri Time</h3>
-      <div class="inner-countdown" id="sehri-countdown">00:00:00</div>
+      <h3 class="single-countdown-text">Iftar Time</h3>
+      <div class="inner-countdown" id="iftar-countdown">00:00 PM</div>
     </div>
   </div>
 
   <button id="show-calendar">Show Ramadan Calendar</button>
 </div>
 
-<!-- Calendar Page -->
-<div class="container" id="calendar-page" style="display:none;">
+<div class="container" id="calendar-page">
   <h1>🌙 Ramadan Calendar</h1>
-
   <div class="calendar-wrapper">
     <table id="ramadan-table">
       <thead>
@@ -62,13 +52,14 @@
       <tbody></tbody>
     </table>
   </div>
-
   <button id="back-to-countdown">← Back to Countdown</button>
-  <a href="https://www.islamicfinder.org/ramadan-calendar/" target="_blank" rel="noopener" id="external-calendar-link">IslamicFinder Ramadan Calendar</a>
-</div>
+   <a href="https://www.islamicfinder.org/ramadan-calendar/" target="_blank" rel="noopener" id="external-calendar-link">
+    View Full Ramadan Calendar on IslamicFinder
+  </a>
+  </div>
 
 <audio id="azanAudio" src="azan.mp3"></audio>
+
 <script src="script.js"></script>
 </body>
 </html>
-
