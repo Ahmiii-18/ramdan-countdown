@@ -1,18 +1,11 @@
-// =======================
-// Variables
-// =======================
 let fajrTime, maghribTime;
 let played = false;
 let lastDateChecked = null;
 
 const citySelect = document.getElementById("city-select");
-const countdownPage = document.getElementById("countdown-page");
-const calendarPage = document.getElementById("calendar-page");
 const azan = document.getElementById("azanAudio");
 
-// =======================
-// Fetch Prayer Times
-// =======================
+// Fetch prayer times
 function fetchPrayerTimes(city) {
   fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=Pakistan&method=2`)
     .then(res => res.json())
@@ -24,160 +17,134 @@ function fetchPrayerTimes(city) {
         `Hijri Date: ${hijri.day} ${hijri.month.en} ${hijri.year}`;
 
       const today = new Date();
+      fajrTime = new Date(today); 
+      const [fh, fm] = timings.Fajr.split(":"); 
+      fajrTime.setHours(fh, fm, 0);
 
-      // Set Fajr time
-      fajrTime = new Date(today);
-      const [fajrH, fajrM] = timings.Fajr.split(":");
-      fajrTime.setHours(fajrH, fajrM, 0);
-
-      // Set Maghrib time
-      maghribTime = new Date(today);
-      const [maghribH, maghribM] = timings.Maghrib.split(":");
-      maghribTime.setHours(maghribH, maghribM, 0);
+      maghribTime = new Date(today); 
+      const [mh, mm] = timings.Maghrib.split(":"); 
+      maghribTime.setHours(mh, mm, 0);
 
       played = false;
-
-      // Load calendar after fetching timings
       loadRamadanCalendar(city);
     })
-    .catch(err => console.error("Error fetching prayer times:", err));
+    .catch(err => console.error(err));
 }
 
-// =======================
-// Countdown Logic
-// =======================
+// Format 12-hour time
+function formatAMPM(date) {
+  let hours = date.getHours();
+  let minutes = date.getMinutes();
+  let ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+  minutes = minutes < 10 ? "0"+minutes : minutes;
+  return hours + ":" + minutes + " " + ampm;
+}
+
+// Countdown
 function updateCountdown() {
   if (!fajrTime || !maghribTime) return;
-
   const now = new Date();
   const todayStr = now.toDateString();
-
-  // Reset played flag if date changed
   if (lastDateChecked !== todayStr) {
     lastDateChecked = todayStr;
-    played = false;
     fetchPrayerTimes(citySelect.value);
   }
 
-  // determine next events for display
-  const tomorrowFajr = new Date(fajrTime);
-  tomorrowFajr.setDate(tomorrowFajr.getDate() + 1);
-  const tomorrowMaghrib = new Date(maghribTime);
-  tomorrowMaghrib.setDate(tomorrowMaghrib.getDate() + 1);
+  // Fixed Sehri/Iftar times
+  document.getElementById("sehri-countdown").innerText = formatAMPM(fajrTime);
+  document.getElementById("iftar-countdown").innerText = formatAMPM(maghribTime);
 
-  // next Iftar time
-  let nextIftar = now < maghribTime ? maghribTime : tomorrowMaghrib;
-  // next Sehri time
-  let nextSehri = now < fajrTime ? fajrTime : tomorrowFajr;
+  // Countdown for main display only
+  const tomorrowFajr = new Date(fajrTime); tomorrowFajr.setDate(fajrTime.getDate()+1);
+  const tomorrowMaghrib = new Date(maghribTime); tomorrowMaghrib.setDate(maghribTime.getDate()+1);
 
-  // compute differences
-  const diffIftar = nextIftar - now;
+  const nextSehri = now < fajrTime ? fajrTime : tomorrowFajr;
+  const nextIftar = now < maghribTime ? maghribTime : tomorrowMaghrib;
+
   const diffSehri = nextSehri - now;
+  const diffIftar = nextIftar - now;
 
-  const formatTime = t => t.toString().padStart(2, "0");
-  const formatDiff = diff => {
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-    return `${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}`;
-  };
-
-  document.getElementById("iftar-countdown").innerText = formatDiff(diffIftar);
-  document.getElementById("sehri-countdown").innerText = formatDiff(diffSehri);
-
-  // primary display remains the next upcoming event
-  let eventText, nextDiff;
-  if (diffIftar <= diffSehri) {
-    eventText = "Time left for Iftar";
-    nextDiff = diffIftar;
-  } else {
-    eventText = "Time left for Sehri";
-    nextDiff = diffSehri;
+  function formatCountdown(diff) {
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000)/60000);
+    const s = Math.floor((diff % 60000)/1000);
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
   }
 
-  document.getElementById("event-name").innerText = eventText;
-  document.getElementById("countdown").innerText = formatDiff(nextDiff);
+  if (diffIftar <= diffSehri) {
+    document.getElementById("event-name").innerText = "Time left for Iftar";
+    document.getElementById("countdown").innerText = formatCountdown(diffIftar);
+  } else {
+    document.getElementById("event-name").innerText = "Time left for Sehri";
+    document.getElementById("countdown").innerText = formatCountdown(diffSehri);
+  }
 
-  // Play Azan when the primary event reaches zero
-  if (nextDiff <= 0 && !played) {
-    if (azan) {
-      azan.currentTime = 0;
-      azan.volume = 0.8;
-      azan.play().catch(() => console.log("Audio cannot play"));
-    }
+  if ((diffIftar<=0 || diffSehri<=0) && !played) {
+    azan.currentTime = 0;
+    azan.play().catch(()=>{});
     played = true;
   }
 }
 
-// =======================
-// Load Ramadan Calendar (30 Days)
-// =======================
+// Load Ramadan Calendar (19 Feb → 20 Mar, 30 days)
 function loadRamadanCalendar(city) {
   const year = new Date().getFullYear();
-  const startDate = new Date(year, 1, 19); // 19 Feb
+  const startDate = new Date(year, 1, 19); // Feb 19
   const todayStr = new Date().toISOString().split("T")[0];
 
-  // Fetch both February & March calendar
-  Promise.all([
-    fetch(`https://api.aladhan.com/v1/calendarByCity?city=${city}&country=Pakistan&method=2&month=2&year=${year}`).then(res=>res.json()),
-    fetch(`https://api.aladhan.com/v1/calendarByCity?city=${city}&country=Pakistan&method=2&month=3&year=${year}`).then(res=>res.json())
-  ])
-  .then(([febData, marData]) => {
-    const combinedData = [...febData.data, ...marData.data];
+  Promise.all([2,3].map(month =>
+    fetch(`https://api.aladhan.com/v1/calendarByCity?city=${city}&country=Pakistan&method=2&month=${month}&year=${year}`)
+      .then(r=>r.json())
+  ))
+  .then(results => {
+    const combinedData = results.flatMap(r=>r.data);
     let tableRows = "";
 
-    for (let i = 0; i < 30; i++) {
+    for (let i=0; i<30; i++) {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
 
-      const day = currentDate.getDate().toString().padStart(2,"0");
-      const month = (currentDate.getMonth()+1).toString().padStart(2,"0");
-      const apiFormat = `${day}-${month}-${year}`;
-      const isoFormat = currentDate.toISOString().split("T")[0];
+      const dd = String(currentDate.getDate()).padStart(2,"0");
+      const mm = String(currentDate.getMonth()+1).padStart(2,"0");
+      const yyyy = currentDate.getFullYear();
+
+      const apiFormat = `${dd}-${mm}-${yyyy}`;
+      const isoFormat = `${yyyy}-${mm}-${dd}`;
 
       const dayData = combinedData.find(d => d.date.gregorian.date === apiFormat);
+      if (!dayData) continue;
 
-      if (dayData) {
-        tableRows += `
-          <tr class="${isoFormat === todayStr ? 'today-row' : ''}">
-            <td>${apiFormat}</td>
-            <td>${dayData.timings.Fajr}</td>
-            <td>${dayData.timings.Maghrib}</td>
-          </tr>
-        `;
-      }
+      tableRows += `
+        <tr class="${isoFormat === todayStr ? 'today-row' : ''}">
+          <td>${apiFormat}</td>
+          <td>${dayData.timings.Fajr}</td>
+          <td>${dayData.timings.Maghrib}</td>
+        </tr>
+      `;
     }
 
     document.querySelector("#ramadan-table tbody").innerHTML = tableRows;
   })
-  .catch(err => console.error("Error loading calendar:", err));
+  .catch(err => console.error(err));
 }
 
-// =======================
 // Event Listeners
-// =======================
-citySelect.addEventListener("change", () => fetchPrayerTimes(citySelect.value));
+citySelect.addEventListener("change", ()=>fetchPrayerTimes(citySelect.value));
+document.getElementById("show-calendar").onclick = ()=>{
+  document.getElementById("countdown-page").style.display="none";
+  document.getElementById("calendar-page").style.display="flex";
+};
+document.getElementById("back-to-countdown").onclick = ()=>{
+  document.getElementById("calendar-page").style.display="none";
+  document.getElementById("countdown-page").style.display="block";
+};
 
-document.getElementById("show-calendar").addEventListener("click", () => {
-  countdownPage.style.display = "none";
-  calendarPage.style.display = "flex";
-});
+// Unlock audio
+document.body.addEventListener('click',()=>{
+  if(azan.paused) azan.play().then(()=>azan.pause()).catch(()=>{});
+},{once:true});
 
-
-document.getElementById("back-to-countdown").addEventListener("click", () => {
-  calendarPage.style.display = "none";
-  countdownPage.style.display = "flex";
-});
-
-// Unlock audio on first interaction
-document.body.addEventListener('click', () => {
-  if (azan && azan.paused) {
-    azan.play().then(()=>azan.pause()).catch(()=>{});
-  }
-}, { once: true });
-
-// =======================
 // Initialize
-// =======================
-fetchPrayerTimes(citySelect.value || "Lahore");
-setInterval(updateCountdown, 1000);
+fetchPrayerTimes("Lahore");
+setInterval(updateCountdown,1000);
